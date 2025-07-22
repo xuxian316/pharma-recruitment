@@ -115,22 +115,22 @@ const BatteryChainDiagram: React.FC<BatteryChainDiagramProps> = ({
                   </div>
                 </div>
               </div>
-                {/* 连接箭头指示 */}
-                {layer === 'innovation' && (
-                  <div className="mt-4 text-center">
-                    <span className="text-sm font-medium text-blue-600">
-                      「连续流技术」→
-                    </span>
-                  </div>
-                )}
-                {layer === 'engineering' && (
-                  <div className="mt-4 text-center">
-                    <span className="text-sm font-medium text-purple-600">
-                      「电芯适配数据」→
-                    </span>
-                  </div>
-                )}
-              </div>
+              
+              {/* 连接箭头指示 */}
+              {layer === 'innovation' && (
+                <div className="mt-4 text-center">
+                  <span className="text-sm font-medium text-blue-600">
+                    「连续流技术」→
+                  </span>
+                </div>
+              )}
+              {layer === 'engineering' && (
+                <div className="mt-4 text-center">
+                  <span className="text-sm font-medium text-purple-600">
+                    「电芯适配数据」→
+                  </span>
+                </div>
+              )}
 
               {/* 节点网格 */}
               <div className={`grid ${nodes.length <= 3 ? `grid-cols-${nodes.length}` : 'grid-cols-3'} gap-6`}>

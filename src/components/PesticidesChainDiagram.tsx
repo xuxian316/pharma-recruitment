@@ -115,22 +115,22 @@ const PesticidesChainDiagram: React.FC<PesticidesChainDiagramProps> = ({
                   </div>
                 </div>
               </div>
-                {/* 分叉连接指示 */}
-                {layer === 'creation' && (
-                  <div className="mt-4 text-center">
-                    <span className="text-sm font-medium text-green-600">
-                      「田间有效性」+「手性纯化」→
-                    </span>
-                  </div>
-                )}
-                {layer === 'transformation' && (
-                  <div className="mt-4 text-center">
-                    <span className="text-sm font-medium text-teal-600">
-                      「环境安全数据」+「抗性监测数据」→
-                    </span>
-                  </div>
-                )}
-              </div>
+              
+              {/* 分叉连接指示 */}
+              {layer === 'creation' && (
+                <div className="mt-4 text-center">
+                  <span className="text-sm font-medium text-green-600">
+                    「田间有效性」+「手性纯化」→
+                  </span>
+                </div>
+              )}
+              {layer === 'transformation' && (
+                <div className="mt-4 text-center">
+                  <span className="text-sm font-medium text-teal-600">
+                    「环境安全数据」+「抗性监测数据」→
+                  </span>
+                </div>
+              )}
 
               {/* 节点网格 */}
               <div className={`grid ${nodes.length <= 3 ? `grid-cols-${nodes.length}` : 'grid-cols-3'} gap-6`}>

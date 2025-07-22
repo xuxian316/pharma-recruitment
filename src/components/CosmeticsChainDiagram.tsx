@@ -115,22 +115,22 @@ const CosmeticsChainDiagram: React.FC<CosmeticsChainDiagramProps> = ({
                   </div>
                 </div>
               </div>
-                {/* 连接箭头指示 */}
-                {layer === 'development' && (
-                  <div className="mt-4 text-center">
-                    <span className="text-sm font-medium text-pink-600">
-                      「皮肤渗透性设计」→
-                    </span>
-                  </div>
-                )}
-                {layer === 'formulation' && (
-                  <div className="mt-4 text-center">
-                    <span className="text-sm font-medium text-purple-600">
-                      「消费体验数据」→
-                    </span>
-                  </div>
-                )}
-              </div>
+              
+              {/* 连接箭头指示 */}
+              {layer === 'development' && (
+                <div className="mt-4 text-center">
+                  <span className="text-sm font-medium text-pink-600">
+                    「皮肤渗透性设计」→
+                  </span>
+                </div>
+              )}
+              {layer === 'formulation' && (
+                <div className="mt-4 text-center">
+                  <span className="text-sm font-medium text-purple-600">
+                    「消费体验数据」→
+                  </span>
+                </div>
+              )}
 
               {/* 节点网格 */}
               <div className={`grid ${nodes.length <= 3 ? `grid-cols-${nodes.length}` : 'grid-cols-3'} gap-6`}>
