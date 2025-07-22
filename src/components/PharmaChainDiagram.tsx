@@ -18,6 +18,9 @@ const PharmaChainDiagram: React.FC<PharmaChainDiagramProps> = ({ onNodeClick, on
 
   // 计算每个节点的实际职位数量
   const nodeJobCounts = useMemo(() => {
+    console.log('[DEBUG] PharmaChainDiagram: Calculating nodeJobCounts with', jobPositions.length, 'positions');
+    console.log('[DEBUG] PharmaChainDiagram: Sample job positions:', jobPositions.slice(0, 3));
+    
     const counts: Record<string, number> = {};
     jobPositions.forEach(job => {
       if (counts[job.nodeId]) {
@@ -26,6 +29,8 @@ const PharmaChainDiagram: React.FC<PharmaChainDiagramProps> = ({ onNodeClick, on
         counts[job.nodeId] = 1;
       }
     });
+    
+    console.log('[DEBUG] PharmaChainDiagram: Final nodeJobCounts:', counts);
     return counts;
   }, [jobPositions]);
 
