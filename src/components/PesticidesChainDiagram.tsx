@@ -2,23 +2,26 @@
 
 import React, { useState, useMemo } from 'react';
 import { pesticidesChainData, ChainNode, SkillTree } from '@/data/pesticidesChain';
-import { pesticidesJobPositions } from '@/data/pesticidesJobsData';
+import { UnifiedJobPosition } from '@/types/UnifiedJobPosition';
+import { MapPin, TrendingUp, Clock } from 'lucide-react';
 
 interface PesticidesChainDiagramProps {
   onNodeClick: (nodeId: string, nodeName: string) => void;
   onSkillTreeShow: (skills: SkillTree[], nodeName: string) => void;
+  jobPositions: UnifiedJobPosition[];
 }
 
 const PesticidesChainDiagram: React.FC<PesticidesChainDiagramProps> = ({
   onNodeClick,
-  onSkillTreeShow
+  onSkillTreeShow,
+  jobPositions
 }) => {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
   // 计算每个节点的实际职位数量
   const nodeJobCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    pesticidesJobPositions.forEach(job => {
+    jobPositions.forEach(job => {
       if (counts[job.nodeId]) {
         counts[job.nodeId]++;
       } else {
@@ -26,7 +29,7 @@ const PesticidesChainDiagram: React.FC<PesticidesChainDiagramProps> = ({
       }
     });
     return counts;
-  }, []);
+  }, [jobPositions]);
 
   // 按层级分组节点
   const nodesByLayer = {
@@ -96,13 +99,22 @@ const PesticidesChainDiagram: React.FC<PesticidesChainDiagramProps> = ({
           return (
             <div key={layer} className="relative">
               {/* 层级标题 */}
-              <div className="mb-6 text-center">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  {config.title}
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  {config.subtitle}
-                </p>
+              <div className="flex items-center justify-between mb-6">
+                <div className="text-center flex-1">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">
+                    {config.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    {config.subtitle}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                  <div className="flex items-center">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    <span>{nodes.reduce((sum, node) => sum + (nodeJobCounts[node.id] || 0), 0)} 个岗位</span>
+                  </div>
+                </div>
+              </div>
                 {/* 分叉连接指示 */}
                 {layer === 'creation' && (
                   <div className="mt-4 text-center">

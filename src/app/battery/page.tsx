@@ -1,20 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import BatteryChainDiagram from '@/components/BatteryChainDiagram';
 import SkillTreeModal from '@/components/SkillTreeModal';
 import JobDatabase from '@/components/JobDatabase';
 import BatteryIndustryAlerts from '@/components/BatteryIndustryAlerts';
 import { SkillTree } from '@/data/batteryChain';
+import SupabaseDataLoader from '@/components/SupabaseDataLoader';
+import { UnifiedJobPosition } from '@/types/UnifiedJobPosition';
 
 export default function BatteryPage() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
   const [selectedNodeName, setSelectedNodeName] = useState<string | undefined>();
+  const [jobPositions, setJobPositions] = useState<UnifiedJobPosition[]>([]);
   const [skillTreeModal, setSkillTreeModal] = useState({
     isOpen: false,
     skills: [] as SkillTree[],
     nodeName: ''
   });
+
+  const handleDataLoaded = useCallback((data: UnifiedJobPosition[]) => {
+    setJobPositions(data);
+  }, []);
 
   // 处理节点点击
   const handleNodeClick = (nodeId: string, nodeName: string) => {
@@ -41,6 +48,8 @@ export default function BatteryPage() {
 
   return (
     <div className="min-h-screen bg-amber-50">
+      <SupabaseDataLoader industry="battery" onDataLoaded={handleDataLoaded} />
+      
       {/* 返回按钮和标题 */}
       <div className="pt-6 pb-4">
         <div className="max-w-7xl mx-auto px-6">
@@ -63,13 +72,14 @@ export default function BatteryPage() {
       <BatteryChainDiagram
         onNodeClick={handleNodeClick}
         onSkillTreeShow={handleSkillTreeShow}
+        jobPositions={jobPositions}
       />
 
       {/* 招聘数据库 */}
       <JobDatabase
         selectedNodeId={selectedNodeId}
         selectedNodeName={selectedNodeName}
-        industry="battery"
+        jobPositions={jobPositions}
       />
 
       {/* 行业警示模块 */}

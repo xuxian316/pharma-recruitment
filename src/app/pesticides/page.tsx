@@ -1,20 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import PesticidesChainDiagram from '@/components/PesticidesChainDiagram';
 import SkillTreeModal from '@/components/SkillTreeModal';
 import JobDatabase from '@/components/JobDatabase';
 import PesticidesIndustryAlerts from '@/components/PesticidesIndustryAlerts';
 import { SkillTree } from '@/data/pesticidesChain';
+import SupabaseDataLoader from '@/components/SupabaseDataLoader';
+import { UnifiedJobPosition } from '@/types/UnifiedJobPosition';
 
 export default function PesticidesPage() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
   const [selectedNodeName, setSelectedNodeName] = useState<string | undefined>();
+  const [jobPositions, setJobPositions] = useState<UnifiedJobPosition[]>([]);
   const [skillTreeModal, setSkillTreeModal] = useState({
     isOpen: false,
     skills: [] as SkillTree[],
     nodeName: ''
   });
+
+  const handleDataLoaded = useCallback((data: UnifiedJobPosition[]) => {
+    setJobPositions(data);
+  }, []);
 
   const handleNodeClick = (nodeId: string, nodeName: string) => {
     setSelectedNodeId(nodeId);
@@ -38,6 +45,8 @@ export default function PesticidesPage() {
 
   return (
     <div className="min-h-screen bg-amber-50">
+      <SupabaseDataLoader industry="pesticides" onDataLoaded={handleDataLoaded} />
+      
       <div className="pt-6 pb-4">
         <div className="max-w-7xl mx-auto px-6">
           <button 
@@ -58,12 +67,13 @@ export default function PesticidesPage() {
       <PesticidesChainDiagram
         onNodeClick={handleNodeClick}
         onSkillTreeShow={handleSkillTreeShow}
+        jobPositions={jobPositions}
       />
 
       <JobDatabase
         selectedNodeId={selectedNodeId}
         selectedNodeName={selectedNodeName}
-        industry="pesticides"
+        jobPositions={jobPositions}
       />
 
       <PesticidesIndustryAlerts />
