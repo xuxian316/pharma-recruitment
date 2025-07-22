@@ -1,12 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { jobPositions as pharmaJobPositions, jobStatsByLayer as pharmaJobStatsByLayer } from '@/data/jobsData';
-import { batteryJobPositions, batteryJobStatsByLayer } from '@/data/batteryJobsData';
-import { pesticidesJobPositions, pesticidesJobStatsByLayer } from '@/data/pesticidesJobsData';
-import { cosmeticsJobPositions, cosmeticsJobStatsByLayer } from '@/data/cosmeticsJobsData';
 import { Building2, MapPin, DollarSign, ChevronDown, Star, Zap, Users, TrendingUp, Search, ExternalLink } from 'lucide-react';
 import { UnifiedJobPosition } from '@/types/UnifiedJobPosition';
+import SupabaseDataLoader from '@/components/SupabaseDataLoader';
 
 // 工作数据统计类型
 type StatsType = Record<string, { name: string; totalJobs: number; avgSalary: string; hotSkills: string[] }>;
@@ -28,18 +25,13 @@ interface JobDatabaseProps {
 }
 
 export default function JobDatabase({ selectedNodeId, selectedNodeName, industry }: JobDatabaseProps) {
-  // 获取行业数据的记忆化函数
-  const industryData = useMemo(() => {
-    const dataMap = {
-      battery: { positions: batteryJobPositions, stats: batteryJobStatsByLayer },
-      pesticides: { positions: pesticidesJobPositions, stats: pesticidesJobStatsByLayer },
-      cosmetics: { positions: cosmeticsJobPositions, stats: cosmeticsJobStatsByLayer },
-      default: { positions: pharmaJobPositions, stats: pharmaJobStatsByLayer }
-    };
-    return dataMap[industry as keyof typeof dataMap] || dataMap.default;
-  }, [industry]);
+  const [positions, setPositions] = useState<UnifiedJobPosition[]>([]);
 
-const { positions } = industryData;
+  // 数据加载完成后更新职位信息
+  const handleDataLoaded = useCallback((data: UnifiedJobPosition[]) => {
+    console.log('[DEBUG] JobDatabase: Received data from SupabaseDataLoader:', data.length, 'jobs');
+    setPositions(data);
+  }, []);
 
   // 层级名称映射
   const layerNames = {
@@ -162,7 +154,7 @@ const { positions } = industryData;
   }, [positions]);
   
   // 状态管理
-  const [filteredJobs, setFilteredJobs] = useState<UnifiedJobPosition[]>(positions as UnifiedJobPosition[]);
+  const [filteredJobs, setFilteredJobs] = useState<UnifiedJobPosition[]>([]);
   const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -189,7 +181,7 @@ const { positions } = industryData;
 
   // 过滤和搜索逻辑
   useEffect(() => {
-    let jobs: UnifiedJobPosition[] = positions as UnifiedJobPosition[];
+    let jobs: UnifiedJobPosition[] = positions;
     
     if (selectedNodeId) {
       jobs = jobs.filter(job => job.nodeId === selectedNodeId);
@@ -558,6 +550,12 @@ const { positions } = industryData;
             </p>
           </div>
         )}
+        
+        {/* 数据加载组件 */}
+        <SupabaseDataLoader
+          industry={industry}
+          onDataLoaded={handleDataLoaded}
+        />
       </div>
     </div>
   );
