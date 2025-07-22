@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { getJobPositions, getLastUpdateTime, JobPositionDB } from '@/lib/supabase';
-import { JobPosition } from '@/data/pharmaChain';
+// 使用统一的JobPosition接口
+import { UnifiedJobPosition as JobPosition } from '@/types/UnifiedJobPosition';
 
 interface DataLoaderProps {
   industry?: string;

@@ -6,20 +6,7 @@ import { batteryJobPositions, batteryJobStatsByLayer } from '@/data/batteryJobsD
 import { pesticidesJobPositions, pesticidesJobStatsByLayer } from '@/data/pesticidesJobsData';
 import { cosmeticsJobPositions, cosmeticsJobStatsByLayer } from '@/data/cosmeticsJobsData';
 import { Building2, MapPin, DollarSign, ChevronDown, Star, Zap, Users, TrendingUp, Search, ExternalLink } from 'lucide-react';
-
-// 统一工作职位接口
-interface UnifiedJobPosition {
-  id: string;
-  title: string;
-  nodeId: string;
-  layer: string;
-  company: string;
-  location: string;
-  salary: string;
-  requirements: string[];
-  responsibilities: string[];
-  urgency: string;
-}
+import { UnifiedJobPosition } from '@/types/UnifiedJobPosition';
 
 // 工作数据统计类型
 type StatsType = Record<string, { name: string; totalJobs: number; avgSalary: string; hotSkills: string[] }>;
