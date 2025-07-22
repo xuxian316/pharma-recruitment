@@ -51,7 +51,7 @@ export default function DebugPage() {
 
   // 按nodeId统计药物行业
   const pharmaNodeStats = pharmaJobs.reduce((acc, job) => {
-    acc[job.node_id] = (acc[job.node_id] || 0) + 1;
+    acc[job.nodeId] = (acc[job.nodeId] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
@@ -67,7 +67,7 @@ export default function DebugPage() {
             {Object.entries(industryStats).map(([industry, count]) => (
               <div key={industry} className="flex justify-between">
                 <span>{industry}</span>
-                <span className="font-mono">{count}</span>
+                <span className="font-mono">{count as number}</span>
               </div>
             ))}
           </div>
@@ -86,7 +86,7 @@ export default function DebugPage() {
             {Object.entries(pharmaLayerStats).map(([layer, count]) => (
               <div key={layer} className="flex justify-between">
                 <span>{layer}</span>
-                <span className="font-mono">{count}</span>
+                <span className="font-mono">{count as number}</span>
               </div>
             ))}
           </div>
@@ -105,7 +105,7 @@ export default function DebugPage() {
             {Object.entries(pharmaNodeStats).map(([nodeId, count]) => (
               <div key={nodeId} className="flex justify-between">
                 <span className="text-sm">{nodeId}</span>
-                <span className="font-mono">{count}</span>
+                <span className="font-mono">{count as number}</span>
               </div>
             ))}
           </div>
@@ -122,7 +122,7 @@ export default function DebugPage() {
                 <div className="text-sm">
                   <span className="bg-blue-100 px-2 py-1 rounded mr-2">行业: {job.industry}</span>
                   <span className="bg-green-100 px-2 py-1 rounded mr-2">层级: {job.layer}</span>
-                  <span className="bg-purple-100 px-2 py-1 rounded">节点: {job.node_id}</span>
+                  <span className="bg-purple-100 px-2 py-1 rounded">节点: {job.nodeId}</span>
                 </div>
               </div>
             ))}

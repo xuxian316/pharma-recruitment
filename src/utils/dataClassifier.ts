@@ -247,12 +247,13 @@ export function generateNodeId(title: string, layer: string, industry: string = 
   const titleLower = title.toLowerCase();
   for (const [keyword, nodeId] of Object.entries(layerMapping)) {
     if (titleLower.includes(keyword.toLowerCase())) {
-      return nodeId;
+      return nodeId as string;
     }
   }
   
   // 如果没有匹配，返回该层级的第一个节点ID
-  return Object.values(layerMapping)[0] || `${industry}-${layer}-default`;
+  const firstNodeId = Object.values(layerMapping)[0] as string;
+  return firstNodeId || `${industry}-${layer}-default`;
 }
 
 // 解析Excel文件并自动分类

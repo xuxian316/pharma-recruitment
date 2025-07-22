@@ -33,7 +33,7 @@ export default function PharmaceuticalsPage() {
     
     // 按nodeId统计
     const nodeStats = data.reduce((acc, job) => {
-      acc[job.node_id] = (acc[job.node_id] || 0) + 1;
+      acc[job.nodeId] = (acc[job.nodeId] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
     console.log('节点统计:', nodeStats);
