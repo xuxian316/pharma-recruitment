@@ -12,17 +12,22 @@ interface DataLoaderProps {
 }
 
 export default function SupabaseDataLoader({ industry, onDataLoaded, onUpdateTimeLoaded }: DataLoaderProps) {
+  console.log('[DEBUG] SupabaseDataLoader: Component rendering.');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log(`[DEBUG] SupabaseDataLoader: useEffect triggered for industry: ${industry}`);
     async function loadData() {
+      console.log('[DEBUG] SupabaseDataLoader: loadData started.');
       try {
         setLoading(true);
         setError(null);
 
         // 加载职位数据
+        console.log('[DEBUG] SupabaseDataLoader: Calling getJobPositions...');
         const { data, error: fetchError } = await getJobPositions(industry);
+        console.log('[DEBUG] SupabaseDataLoader: getJobPositions returned.', { data, fetchError });
         
         if (fetchError) {
           throw new Error(fetchError.message);
@@ -42,20 +47,23 @@ export default function SupabaseDataLoader({ industry, onDataLoaded, onUpdateTim
           responsibilities: job.responsibilities || [],
           link: job.link || undefined
         }));
+        console.log(`[DEBUG] SupabaseDataLoader: Mapped ${jobPositions.length} jobs.`);
 
         onDataLoaded(jobPositions);
 
         // 如果需要，加载更新时间
         if (onUpdateTimeLoaded) {
+          console.log('[DEBUG] SupabaseDataLoader: Getting last update time...');
           const updateTime = await getLastUpdateTime();
           onUpdateTimeLoaded(updateTime);
         }
       } catch (err) {
-        console.error('加载数据失败:', err);
+        console.error('[DEBUG] SupabaseDataLoader: CATCH an error', err);
         setError(err instanceof Error ? err.message : '未知错误');
         // 传递空数组，让应用继续运行
         onDataLoaded([]);
       } finally {
+        console.log('[DEBUG] SupabaseDataLoader: loadData finished (finally block).');
         setLoading(false);
       }
     }
