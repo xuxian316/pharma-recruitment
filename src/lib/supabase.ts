@@ -1,11 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Supabase 配置
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// 创建 Supabase 客户端
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// 创建 Supabase 客户端的函数，确保环境变量在运行时加载
+const getClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase 环境变量未设置，请检查 Vercel 项目配置');
+  }
+
+  return createClient(supabaseUrl, supabaseAnonKey);
+};
 
 // 职位数据类型
 export interface JobPositionDB {
@@ -27,6 +34,7 @@ export interface JobPositionDB {
 
 // 获取职位数据
 export async function getJobPositions(industry?: string) {
+  const supabase = getClient();
   let query = supabase
     .from('job_positions')
     .select('*')
@@ -48,6 +56,7 @@ export async function getJobPositions(industry?: string) {
 
 // 更新职位数据（替换所有）
 export async function updateJobPositions(jobs: JobPositionDB[], industry?: string) {
+  const supabase = getClient();
   try {
     // 如果指定了行业，只删除该行业的数据
     if (industry) {
@@ -96,6 +105,7 @@ export async function updateJobPositions(jobs: JobPositionDB[], industry?: strin
 
 // 获取最后更新时间
 export async function getLastUpdateTime() {
+  const supabase = getClient();
   const { data, error } = await supabase
     .from('update_history')
     .select('updated_at')
@@ -121,6 +131,7 @@ export async function getLastUpdateTime() {
 
 // 搜索职位
 export async function searchJobs(keyword: string, industry?: string) {
+  const supabase = getClient();
   let query = supabase
     .from('job_positions')
     .select('*')
@@ -144,6 +155,7 @@ export async function searchJobs(keyword: string, industry?: string) {
 
 // 获取职位统计
 export async function getJobStats(industry?: string) {
+  const supabase = getClient();
   let query = supabase
     .from('job_positions')
     .select('layer, urgency', { count: 'exact' })
@@ -185,6 +197,7 @@ export async function getJobStats(industry?: string) {
 
 // 上传 Excel 文件到存储
 export async function uploadExcelFile(file: File, fileName: string) {
+  const supabase = getClient();
   const { data, error } = await supabase.storage
     .from('excel-uploads')
     .upload(`${Date.now()}-${fileName}`, file, {
@@ -207,6 +220,7 @@ export async function uploadExcelFile(file: File, fileName: string) {
 
 // 检查数据库连接
 export async function checkDatabaseConnection() {
+  const supabase = getClient();
   try {
     const { data, error } = await supabase
       .from('job_positions')
