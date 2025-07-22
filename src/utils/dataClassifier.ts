@@ -114,10 +114,145 @@ export function classifyLayer(jobData: any, industry: string): string {
   return Object.entries(scores).find(([_, score]) => score === maxScore)?.[0] || Object.keys(layerRules)[0];
 }
 
-// 生成nodeId（基于title和layer）
-export function generateNodeId(title: string, layer: string): string {
-  const cleanTitle = title.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').toLowerCase();
-  return `${cleanTitle}-${layer}`.substring(0, 30);
+// 预定义的节点ID映射
+const nodeIdMapping = {
+  pharma: {
+    discovery: {
+      '靶点': 'target-identification',
+      '目标': 'target-identification', 
+      '生物信息': 'target-identification',
+      '分子生物': 'target-identification',
+      '设计': 'molecular-design',
+      '分子设计': 'molecular-design',
+      'CADD': 'molecular-design',
+      '药物设计': 'molecular-design',
+      '计算': 'molecular-design',
+      '合成': 'compound-synthesis',
+      '化合物': 'compound-synthesis',
+      '有机合成': 'compound-synthesis',
+      '化学合成': 'compound-synthesis',
+      '筛选': 'pharmacological-screening',
+      '药理': 'pharmacological-screening',
+      '活性': 'pharmacological-screening',
+      '体外': 'pharmacological-screening'
+    },
+    development: {
+      'CMC': 'cmc-development',
+      '制剂': 'cmc-development',
+      '质量': 'cmc-development',
+      '质控': 'cmc-development',
+      '临床前': 'preclinical-research',
+      '动物': 'preclinical-research',
+      '毒理': 'preclinical-research',
+      '安全性': 'preclinical-research',
+      '临床': 'clinical-trials',
+      '试验': 'clinical-trials',
+      'CRO': 'clinical-trials',
+      'GCP': 'clinical-trials',
+      '生产': 'gmp-production',
+      'GMP': 'gmp-production',
+      '制造': 'gmp-production',
+      '工艺': 'gmp-production'
+    },
+    commercialization: {
+      '准入': 'market-access',
+      '市场': 'market-access',
+      '注册': 'market-access',
+      '法规': 'market-access',
+      '分销': 'distribution-channels',
+      '供应链': 'distribution-channels',
+      '物流': 'distribution-channels',
+      '渠道': 'distribution-channels',
+      '患者': 'patient-services',
+      '服务': 'patient-services',
+      '医学': 'patient-services',
+      '教育': 'patient-services',
+      '警戒': 'patient-services',
+      '监测': 'patient-services'
+    }
+  },
+  battery: {
+    innovation: {
+      '材料': 'material-innovation',
+      '研发': 'material-innovation',
+      '基础': 'material-innovation',
+      '创新': 'material-innovation'
+    },
+    engineering: {
+      '工艺': 'process-engineering',
+      '工程': 'process-engineering',
+      '制造': 'process-engineering',
+      '生产': 'process-engineering'
+    },
+    integration: {
+      '集成': 'system-integration',
+      '应用': 'system-integration',
+      '系统': 'system-integration',
+      'BMS': 'system-integration',
+      'PACK': 'system-integration'
+    }
+  },
+  cosmetics: {
+    development: {
+      '开发': 'ingredient-development',
+      '成分': 'ingredient-development',
+      '活性': 'ingredient-development',
+      '研发': 'ingredient-development'
+    },
+    formulation: {
+      '配方': 'formulation-development',
+      '工艺': 'formulation-development',
+      '制剂': 'formulation-development',
+      '稳定性': 'formulation-development'
+    },
+    commercialization: {
+      '商业': 'brand-marketing',
+      '品牌': 'brand-marketing',
+      '市场': 'brand-marketing',
+      '注册': 'regulatory-affairs',
+      '法规': 'regulatory-affairs'
+    }
+  },
+  pesticides: {
+    creation: {
+      '创制': 'compound-discovery',
+      '发现': 'compound-discovery',
+      '筛选': 'compound-discovery',
+      '设计': 'compound-discovery'
+    },
+    transformation: {
+      '开发': 'product-development',
+      '制剂': 'product-development',
+      '工艺': 'product-development',
+      '登记': 'regulatory-documents'
+    },
+    service: {
+      '服务': 'technical-service',
+      '应用': 'technical-service',
+      '推广': 'technical-service',
+      '植保': 'crop-protection-design'
+    }
+  }
+};
+
+// 生成nodeId（基于title和layer映射到预定义节点）
+export function generateNodeId(title: string, layer: string, industry: string = 'pharma'): string {
+  const mapping = nodeIdMapping[industry as keyof typeof nodeIdMapping];
+  if (!mapping) return `${industry}-default-node`;
+  
+  const layerMapping = mapping[layer as keyof typeof mapping];
+  if (!layerMapping) return `${industry}-${layer}-default`;
+  
+  // 寻找最佳匹配的节点ID
+  const titleLower = title.toLowerCase();
+  for (const [keyword, nodeId] of Object.entries(layerMapping)) {
+    if (titleLower.includes(keyword.toLowerCase())) {
+      return nodeId;
+    }
+  }
+  
+  // 如果没有匹配，返回该层级的第一个节点ID
+  return Object.values(layerMapping)[0] || `${industry}-${layer}-default`;
 }
 
 // 解析Excel文件并自动分类
@@ -157,7 +292,7 @@ export async function parseAndClassifyExcel(buffer: Buffer): Promise<{
       // 自动分类
       const industry = classifyIndustry(jobData);
       const layer = classifyLayer(jobData, industry);
-      const nodeId = generateNodeId(jobData.title, layer);
+      const nodeId = generateNodeId(jobData.title, layer, industry);
       
       // 创建完整的职位对象
       const jobPosition: JobPosition = {
