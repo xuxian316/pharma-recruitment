@@ -21,7 +21,7 @@ interface ExcelJob {
 interface ProcessResult {
   success: boolean;
   message: string;
-  updatedJobs?: number;
+  addedJobs?: number; // 新增的职位数量
   errors?: string[];
 }
 
@@ -110,8 +110,8 @@ function processExcelRow(row: any, rowIndex: number): { job: ExcelJob | null; er
   return { job, error: null };
 }
 
-// 更新职位数据到 Supabase
-async function updateJobsDataToSupabase(jobs: ExcelJob[]): Promise<number> {
+// 将处理好的职位数据合并到 Supabase
+async function mergeJobsDataToSupabase(jobs: ExcelJob[]): Promise<{ addedCount: number }> {
   try {
     // 转换为 Supabase 格式
     const supabaseJobs: JobPositionDB[] = jobs.map(job => ({
@@ -127,17 +127,18 @@ async function updateJobsDataToSupabase(jobs: ExcelJob[]): Promise<number> {
       responsibilities: job.responsibilities ? job.responsibilities.split(';').map(r => r.trim()) : [],
       link: job.link
     }));
-    
-    // 更新到 Supabase
-    const { error } = await updateJobPositions(supabaseJobs);
-    
+
+    // 调用新的合并去重函数
+    const { error, addedCount } = await updateJobPositions(supabaseJobs);
+
     if (error) {
       throw new Error(`Supabase 错误: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
     }
-    
-    return supabaseJobs.length;
+
+    return { addedCount: addedCount || 0 };
+
   } catch (error) {
-    console.error('写入文件时出错:', error);
+    console.error('写入数据库时出错:', error);
     throw error;
   }
 }
@@ -206,12 +207,13 @@ export async function POST(request: NextRequest) {
     }
     
     // 更新数据到 Supabase
-    const updatedCount = await updateJobsDataToSupabase(validJobs);
-    
+    const { addedCount } = await mergeJobsDataToSupabase(validJobs);
+    const duplicateCount = validJobs.length - addedCount;
+
     const result: ProcessResult = {
       success: true,
-      message: `成功处理了 ${jsonData.length} 行数据，导入了 ${updatedCount} 个职位`,
-      updatedJobs: updatedCount,
+      message: `成功处理 ${jsonData.length} 行，新增 ${addedCount} 个职位，跳过 ${duplicateCount} 个重复项。`,
+      addedJobs: addedCount,
       errors: errors.length > 0 ? errors : undefined
     };
     

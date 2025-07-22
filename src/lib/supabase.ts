@@ -54,52 +54,56 @@ export async function getJobPositions(industry?: string) {
   return { data: data || [], error: null }
 }
 
-// 更新职位数据（替换所有）
-export async function updateJobPositions(jobs: JobPositionDB[], industry?: string) {
+// 更新职位数据（合并去重）
+export async function updateJobPositions(jobs: JobPositionDB[]) {
   const supabase = getClient();
   try {
-    // 如果指定了行业，只删除该行业的数据
-    if (industry) {
-      const { error: deleteError } = await supabase
-        .from('job_positions')
-        .delete()
-        .eq('industry', industry)
-      
-      if (deleteError) throw deleteError
-    } else {
-      // 否则删除所有数据
-      const { error: deleteError } = await supabase
-        .from('job_positions')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000') // 删除所有记录
-      
-      if (deleteError) throw deleteError
+    // 1. 获取所有现有职位用于去重
+    const { data: existingJobs, error: fetchError } = await supabase
+      .from('job_positions')
+      .select('title,company,location');
+
+    if (fetchError) {
+      throw new Error(`获取现有职位失败: ${fetchError.message}`);
     }
-    
-    // 插入新数据
-    if (jobs.length > 0) {
-      const { data, error: insertError } = await supabase
-        .from('job_positions')
-        .insert(jobs)
-        .select()
-      
-      if (insertError) throw insertError
-      
-      // 记录更新历史
-      await supabase
-        .from('update_history')
-        .insert({ 
-          records_count: jobs.length,
-          industry: industry || 'all'
-        })
-      
-      return { data, error: null }
+
+    // 2. 创建一个用于快速查找的集合
+    const existingJobKeys = new Set(
+      existingJobs.map(job => `${job.title?.trim()}-${job.company?.trim()}-${job.location?.trim()}`)
+    );
+
+    // 3. 筛选出不存在于数据库中的新职位
+    const newJobsToInsert = jobs.filter(job => {
+      const jobKey = `${job.title?.trim()}-${job.company?.trim()}-${job.location?.trim()}`;
+      return !existingJobKeys.has(jobKey);
+    });
+
+    // 4. 如果没有新职位，则直接返回
+    if (newJobsToInsert.length === 0) {
+      return { data: [], error: null, addedCount: 0 };
     }
-    
-    return { data: [], error: null }
+
+    // 5. 插入新的、不重复的职位
+    const { data, error: insertError } = await supabase
+      .from('job_positions')
+      .insert(newJobsToInsert)
+      .select();
+
+    if (insertError) {
+      throw new Error(`插入新职位失败: ${insertError.message}`);
+    }
+
+    // 6. 记录更新历史
+    await supabase.from('update_history').insert({
+      records_count: newJobsToInsert.length,
+      industry: 'all' // 因为是合并，所以行业是全部
+    });
+
+    return { data, error: null, addedCount: newJobsToInsert.length };
+
   } catch (error) {
-    console.error('更新职位数据失败:', error)
-    return { data: null, error }
+    console.error('更新职位数据失败:', error);
+    return { data: null, error, addedCount: 0 };
   }
 }
 
