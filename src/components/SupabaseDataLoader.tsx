@@ -34,6 +34,7 @@ export default function SupabaseDataLoader({ industry, onDataLoaded, onUpdateTim
         }
 
         // 转换为应用格式
+        console.log('[DEBUG] SupabaseDataLoader: Raw data sample:', data?.slice(0, 2));
         const jobPositions: JobPosition[] = (data || []).map((job: JobPositionDB) => ({
           id: job.id || '',
           title: job.title,
@@ -48,6 +49,7 @@ export default function SupabaseDataLoader({ industry, onDataLoaded, onUpdateTim
           link: job.link || undefined
         }));
         console.log(`[DEBUG] SupabaseDataLoader: Mapped ${jobPositions.length} jobs.`);
+        console.log('[DEBUG] SupabaseDataLoader: Mapped data sample:', jobPositions.slice(0, 2));
 
         onDataLoaded(jobPositions);
 

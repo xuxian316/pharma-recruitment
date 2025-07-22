@@ -1,28 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import PharmaChainDiagram from '@/components/PharmaChainDiagram';
 import SkillTreeModal from '@/components/SkillTreeModal';
 import JobDatabase from '@/components/JobDatabase';
 import IndustryAlerts from '@/components/IndustryAlerts';
 import { SkillTree } from '@/data/pharmaChain';
+import SupabaseDataLoader from '@/components/SupabaseDataLoader';
+import { UnifiedJobPosition } from '@/types/UnifiedJobPosition';
 
 export default function PharmaceuticalsPage() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
   const [selectedNodeName, setSelectedNodeName] = useState<string | undefined>();
+  const [jobPositions, setJobPositions] = useState<UnifiedJobPosition[]>([]);
   const [skillTreeModal, setSkillTreeModal] = useState({
     isOpen: false,
     skills: [] as SkillTree[],
     nodeName: ''
   });
 
-  // 处理节点点击
+  const handleDataLoaded = useCallback((data: UnifiedJobPosition[]) => {
+    setJobPositions(data);
+  }, []);
+
   const handleNodeClick = (nodeId: string, nodeName: string) => {
     setSelectedNodeId(nodeId);
     setSelectedNodeName(nodeName);
   };
 
-  // 显示技能树
   const handleSkillTreeShow = (skills: SkillTree[], nodeName: string) => {
     setSkillTreeModal({
       isOpen: true,
@@ -31,7 +36,6 @@ export default function PharmaceuticalsPage() {
     });
   };
 
-  // 关闭技能树弹窗
   const handleSkillTreeClose = () => {
     setSkillTreeModal(prev => ({
       ...prev,
@@ -41,7 +45,8 @@ export default function PharmaceuticalsPage() {
 
   return (
     <div className="min-h-screen bg-amber-50">
-      {/* 返回按钮和标题 */}
+      <SupabaseDataLoader industry="pharmaceuticals" onDataLoaded={handleDataLoaded} />
+      
       <div className="pt-6 pb-4">
         <div className="max-w-7xl mx-auto px-6">
           <button 
@@ -59,23 +64,20 @@ export default function PharmaceuticalsPage() {
         </div>
       </div>
 
-      {/* 药物产业链流程图 */}
       <PharmaChainDiagram
         onNodeClick={handleNodeClick}
         onSkillTreeShow={handleSkillTreeShow}
+        jobPositions={jobPositions}
       />
 
-      {/* 招聘数据库 */}
       <JobDatabase
         selectedNodeId={selectedNodeId}
         selectedNodeName={selectedNodeName}
-        industry="pharmaceuticals"
+        jobPositions={jobPositions}
       />
 
-      {/* 医药行业警示模块 */}
       <IndustryAlerts />
 
-      {/* 技能树弹窗 */}
       <SkillTreeModal
         isOpen={skillTreeModal.isOpen}
         onClose={handleSkillTreeClose}

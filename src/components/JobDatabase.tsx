@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Building2, MapPin, DollarSign, ChevronDown, Star, Zap, Users, TrendingUp, Search, ExternalLink } from 'lucide-react';
 import { UnifiedJobPosition } from '@/types/UnifiedJobPosition';
-import SupabaseDataLoader from '@/components/SupabaseDataLoader';
 
 // 工作数据统计类型
 type StatsType = Record<string, { name: string; totalJobs: number; avgSalary: string; hotSkills: string[] }>;
@@ -21,17 +20,10 @@ type TempStatsType = Record<string, {
 interface JobDatabaseProps {
   selectedNodeId?: string;
   selectedNodeName?: string;
-  industry?: string;
+  jobPositions: UnifiedJobPosition[];
 }
 
-export default function JobDatabase({ selectedNodeId, selectedNodeName, industry }: JobDatabaseProps) {
-  const [positions, setPositions] = useState<UnifiedJobPosition[]>([]);
-
-  // 数据加载完成后更新职位信息
-  const handleDataLoaded = useCallback((data: UnifiedJobPosition[]) => {
-    console.log('[DEBUG] JobDatabase: Received data from SupabaseDataLoader:', data.length, 'jobs');
-    setPositions(data);
-  }, []);
+export default function JobDatabase({ selectedNodeId, selectedNodeName, jobPositions }: JobDatabaseProps) {
 
   // 层级名称映射
   const layerNames = {
@@ -94,7 +86,7 @@ export default function JobDatabase({ selectedNodeId, selectedNodeName, industry
         .map(([skill]) => skill);
     };
 
-    positions.forEach((job) => {
+    jobPositions.forEach((job) => {
       const layer = job.layer;
       if (!tempStats[layer]) {
         tempStats[layer] = {
@@ -151,7 +143,7 @@ export default function JobDatabase({ selectedNodeId, selectedNodeName, industry
     });
     
     return finalStats;
-  }, [positions]);
+  }, [jobPositions]);
   
   // 状态管理
   const [filteredJobs, setFilteredJobs] = useState<UnifiedJobPosition[]>([]);
@@ -181,14 +173,19 @@ export default function JobDatabase({ selectedNodeId, selectedNodeName, industry
 
   // 过滤和搜索逻辑
   useEffect(() => {
-    let jobs: UnifiedJobPosition[] = positions;
+    console.log('[DEBUG] JobDatabase: Filtering jobs. Input positions:', jobPositions.length);
+    console.log('[DEBUG] JobDatabase: Filter conditions:', { selectedNodeId, selectedLayer, searchTerm });
+    
+    let jobs: UnifiedJobPosition[] = jobPositions;
     
     if (selectedNodeId) {
       jobs = jobs.filter(job => job.nodeId === selectedNodeId);
+      console.log('[DEBUG] JobDatabase: After nodeId filter:', jobs.length);
     }
     
     if (selectedLayer) {
       jobs = jobs.filter(job => job.layer === selectedLayer);
+      console.log('[DEBUG] JobDatabase: After layer filter:', jobs.length);
     }
     
     if (searchTerm) {
@@ -197,10 +194,13 @@ export default function JobDatabase({ selectedNodeId, selectedNodeName, industry
         job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.location.toLowerCase().includes(searchTerm.toLowerCase())
       );
+      console.log('[DEBUG] JobDatabase: After search filter:', jobs.length);
     }
     
+    console.log('[DEBUG] JobDatabase: Final filtered jobs:', jobs.length);
+    console.log('[DEBUG] JobDatabase: Sample filtered job:', jobs[0]);
     setFilteredJobs(jobs);
-  }, [positions, selectedNodeId, selectedLayer, searchTerm]);
+  }, [jobPositions, selectedNodeId, selectedLayer, searchTerm]);
 
   // 优化的事件处理函数
   const handleLayerToggle = useCallback((layer: string) => {
@@ -550,12 +550,6 @@ export default function JobDatabase({ selectedNodeId, selectedNodeName, industry
             </p>
           </div>
         )}
-        
-        {/* 数据加载组件 */}
-        <SupabaseDataLoader
-          industry={industry}
-          onDataLoaded={handleDataLoaded}
-        />
       </div>
     </div>
   );

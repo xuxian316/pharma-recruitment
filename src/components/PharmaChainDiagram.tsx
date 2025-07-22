@@ -4,13 +4,15 @@ import React, { useState, useMemo } from 'react';
 import { pharmaChainData, ChainNode } from '@/data/pharmaChain';
 import { ChevronRight, MapPin, TrendingUp, Clock } from 'lucide-react';
 import { SkillTree } from '@/data/pharmaChain';
-import { jobPositions } from '@/data/jobsData';
+import { UnifiedJobPosition } from '@/types/UnifiedJobPosition';
+
 interface PharmaChainDiagramProps {
   onNodeClick: (nodeId: string, nodeName: string) => void;
   onSkillTreeShow: (skills: SkillTree[], nodeName: string) => void;
+  jobPositions: UnifiedJobPosition[];
 }
 
-const PharmaChainDiagram: React.FC<PharmaChainDiagramProps> = ({ onNodeClick, onSkillTreeShow }) => {
+const PharmaChainDiagram: React.FC<PharmaChainDiagramProps> = ({ onNodeClick, onSkillTreeShow, jobPositions }) => {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
 
@@ -25,7 +27,7 @@ const PharmaChainDiagram: React.FC<PharmaChainDiagramProps> = ({ onNodeClick, on
       }
     });
     return counts;
-  }, []);
+  }, [jobPositions]);
 
   // 按层级分组
   const nodesByLayer = pharmaChainData.reduce((acc, node) => {
