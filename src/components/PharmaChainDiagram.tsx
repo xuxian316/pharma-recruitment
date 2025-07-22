@@ -18,32 +18,6 @@ const PharmaChainDiagram: React.FC<PharmaChainDiagramProps> = ({ onNodeClick, on
 
   // 计算每个节点的实际职位数量
   const nodeJobCounts = useMemo(() => {
-    console.log('[DEBUG] PharmaChainDiagram: Calculating nodeJobCounts with', jobPositions.length, 'positions');
-    console.log('[DEBUG] PharmaChainDiagram: Sample job positions:', jobPositions.slice(0, 3));
-    
-    // 统计各个nodeId的分布
-    const nodeIdDistribution = new Map<string, number>();
-    const layerDistribution = new Map<string, number>();
-    
-    jobPositions.forEach(job => {
-      // 统计nodeId分布
-      nodeIdDistribution.set(job.nodeId, (nodeIdDistribution.get(job.nodeId) || 0) + 1);
-      // 统计layer分布
-      layerDistribution.set(job.layer, (layerDistribution.get(job.layer) || 0) + 1);
-    });
-    
-    console.log('[DEBUG] PharmaChainDiagram: NodeId distribution:', Object.fromEntries(nodeIdDistribution));
-    console.log('[DEBUG] PharmaChainDiagram: Layer distribution:', Object.fromEntries(layerDistribution));
-    
-    // 检查预定义的nodeId
-    const predefinedNodeIds = pharmaChainData.map(node => node.id);
-    console.log('[DEBUG] PharmaChainDiagram: Predefined nodeIds:', predefinedNodeIds);
-    
-    // 检查实际数据中的nodeId是否匹配预定义的nodeId
-    const actualNodeIds = Array.from(nodeIdDistribution.keys());
-    const unmatchedNodeIds = actualNodeIds.filter(id => !predefinedNodeIds.includes(id));
-    console.log('[DEBUG] PharmaChainDiagram: Unmatched nodeIds:', unmatchedNodeIds);
-    
     const counts: Record<string, number> = {};
     jobPositions.forEach(job => {
       if (counts[job.nodeId]) {
@@ -52,8 +26,6 @@ const PharmaChainDiagram: React.FC<PharmaChainDiagramProps> = ({ onNodeClick, on
         counts[job.nodeId] = 1;
       }
     });
-    
-    console.log('[DEBUG] PharmaChainDiagram: Final nodeJobCounts:', counts);
     return counts;
   }, [jobPositions]);
 
