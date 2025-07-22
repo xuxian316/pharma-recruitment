@@ -39,7 +39,7 @@ export default function SupabaseDataLoader({ industry, onDataLoaded, onUpdateTim
           urgency: job.urgency as 'low' | 'medium' | 'high',
           requirements: job.requirements || [],
           responsibilities: job.responsibilities || [],
-          link: job.link
+          link: job.link || undefined
         }));
 
         onDataLoaded(jobPositions);
