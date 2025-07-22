@@ -132,7 +132,7 @@ async function updateJobsDataToSupabase(jobs: ExcelJob[]): Promise<number> {
     const { error } = await updateJobPositions(supabaseJobs);
     
     if (error) {
-      throw new Error(`Supabase 错误: ${error.message}`);
+      throw new Error(`Supabase 错误: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
     }
     
     return supabaseJobs.length;
